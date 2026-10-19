@@ -1,0 +1,2895 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>秦PLUS DM-i 55km · 家充电池记录</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #eef2f8;
+    --card: #ffffff;
+    --card2: #f7f9fc;
+    --border: #e3e9f2;
+    --line: #d6dfeb;
+    --text: #1e293b;
+    --muted: #64748b;
+    --faint: #94a3b8;
+    --accent: #d92632;
+    --green: #16a34a;
+    --yellow: #d97706;
+    --red: #dc2626;
+    --shadow: 0 1px 2px rgba(15, 23, 42, .04), 0 10px 28px -16px rgba(15, 23, 42, .18);
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+      "Microsoft YaHei", sans-serif;
+    background: linear-gradient(180deg, #e7eef8 0%, #f4f8fd 42%, #f8fafc 100%);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 28px 16px 70px;
+    -webkit-font-smoothing: antialiased;
+    transition: padding .25s ease;
+  }
+
+  .app {
+    max-width: 1140px;
+    margin: 0 auto;
+    transition: max-width .3s ease, padding .3s ease, background .3s ease, box-shadow .3s ease;
+  }
+
+  /* ---------- 头部 ---------- */
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 14px;
+    flex-wrap: wrap;
+    margin-bottom: 22px;
+  }
+
+  h1 {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: .3px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #16202e;
+  }
+  h1::before {
+    content: "";
+    width: 5px;
+    height: 22px;
+    border-radius: 3px;
+    background: linear-gradient(180deg, #ef4444, #d92632);
+    flex: 0 0 auto;
+  }
+  .sub { color: var(--muted); font-size: 13px; margin-top: 8px; margin-left: 15px; }
+
+  .head-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+  .mode-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    color: #334155;
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 9px 16px;
+    cursor: pointer;
+    box-shadow: var(--shadow);
+    white-space: nowrap;
+    transition: all .15s ease;
+  }
+  .mode-btn .ico { font-size: 14px; line-height: 1; }
+  .mode-btn:hover { background: #f4f7fc; border-color: #cbd5e1; }
+  .mode-btn:active { transform: translateY(1px); }
+
+  /* ---------- 卡片 ---------- */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 22px;
+    box-shadow: var(--shadow);
+  }
+
+  .card h2 {
+    font-size: 14px;
+    font-weight: 700;
+    color: #334155;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .card h2::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    flex: 0 0 auto;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: 1.05fr 1fr;
+    gap: 18px;
+    align-items: start;
+  }
+  @media (max-width: 920px) {
+    .grid { grid-template-columns: 1fr; }
+  }
+
+  /* ---------- 编辑提示条 ---------- */
+  .edit-banner {
+    display: none;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 10px 14px;
+    background: #fffbeb;
+    border: 1px solid #fde68a;
+    border-radius: 11px;
+    margin-bottom: 14px;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: #92400e;
+    line-height: 1.5;
+  }
+  .edit-banner.show { display: flex; }
+  .edit-banner button {
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 700;
+    color: #b45309;
+    background: #fff;
+    border: 1px solid #fcd34d;
+    border-radius: 8px;
+    padding: 6px 12px;
+    cursor: pointer;
+    white-space: nowrap;
+    flex: 0 0 auto;
+    transition: background .15s;
+  }
+  .edit-banner button:hover { background: #fef3c7; }
+
+  /* ---------- 计时器面板 ---------- */
+  .timer-panel {
+    background: linear-gradient(135deg, #f8fafd 0%, #eef4fc 100%);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 14px;
+    margin-bottom: 16px;
+  }
+
+  .timer-btns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .timer-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    height: 46px;
+    border: none;
+    border-radius: 11px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 700;
+    color: #fff;
+    cursor: pointer;
+    letter-spacing: .3px;
+    transition: filter .15s, transform .08s;
+  }
+  .timer-btn .tb-ico { font-size: 11px; opacity: .9; }
+  .timer-btn.start {
+    background: linear-gradient(180deg, #3b82f6, #2563eb);
+    box-shadow: 0 8px 18px -10px rgba(37, 99, 235, .75);
+  }
+  .timer-btn.end {
+    background: linear-gradient(180deg, #f59e0b, #d97706);
+    box-shadow: 0 8px 18px -10px rgba(217, 119, 6, .75);
+  }
+  .timer-btn:hover { filter: brightness(1.06); }
+  .timer-btn:active { transform: translateY(1px); }
+
+  .timer-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 11px;
+    padding: 9px 12px;
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+  }
+  .timer-time { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+  .timer-time:last-child { text-align: right; }
+  .tm-label { font-size: 10px; color: var(--faint); font-weight: 600; }
+  .tm-val {
+    font-size: 12.5px;
+    font-weight: 700;
+    color: #334155;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .timer-arrow { color: #cbd5e1; font-size: 13px; flex: 0 0 auto; }
+
+  .duration-edit {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 10px;
+    padding-left: 2px;
+  }
+  .de-label {
+    font-size: 12px;
+    color: var(--muted);
+    font-weight: 600;
+    margin-right: auto;
+  }
+  .duration-edit input[type="number"] {
+    width: 46px;
+    height: 30px;
+    padding: 0;
+    text-align: center;
+    font-size: 13.5px;
+    font-weight: 700;
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: inherit;
+    font-variant-numeric: tabular-nums;
+    outline: none;
+    -moz-appearance: textfield;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  .duration-edit input[type="number"]::-webkit-outer-spin-button,
+  .duration-edit input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  .duration-edit input[type="number"]:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(217, 38, 50, .1);
+  }
+  .de-unit { font-size: 11.5px; color: var(--muted); font-weight: 500; }
+
+  /* ---------- 表单 ---------- */
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+  .field.full { grid-column: 1 / -1; }
+
+  label {
+    display: block;
+    font-size: 12.5px;
+    color: var(--muted);
+    margin-bottom: 7px;
+    font-weight: 500;
+  }
+  label b { color: #334155; font-weight: 600; }
+
+  .input-wrap { position: relative; display: flex; align-items: center; }
+
+  input[type="number"],
+  input[type="datetime-local"],
+  input[type="time"] {
+    width: 100%;
+    min-width: 0;
+    background: #fff;
+    border: 1px solid var(--line);
+    color: var(--text);
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 600;
+    font-family: inherit;
+    font-variant-numeric: tabular-nums;
+    transition: border-color .15s, box-shadow .15s;
+    outline: none;
+    height: 44px;
+  }
+  input[type="number"] {
+    padding: 0 56px 0 12px;
+    -moz-appearance: textfield;
+  }
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+
+  input[type="datetime-local"] { padding: 0 10px; font-size: 13.5px; }
+  input[type="time"] { padding: 0 10px; font-size: 14px; }
+
+  input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(217, 38, 50, .12);
+  }
+
+  .unit {
+    position: absolute;
+    right: 12px;
+    font-size: 12px;
+    color: var(--faint);
+    pointer-events: none;
+    font-weight: 500;
+  }
+
+  .hint {
+    font-size: 11.5px;
+    color: #7d8ba1;
+    margin-top: 14px;
+    line-height: 1.7;
+  }
+  .hint b { color: #475569; font-weight: 600; }
+
+  /* ---------- 结果区 ---------- */
+  .health-box {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    padding: 16px;
+    background: var(--card2);
+    border: 1px solid var(--border);
+    border-radius: 13px;
+    margin-bottom: 14px;
+  }
+
+  .health-ring {
+    --p: 0;
+    --c: #cbd5e1;
+    width: 104px;
+    height: 104px;
+    flex: 0 0 104px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    background: conic-gradient(var(--c) calc(var(--p) * 1%), #e6ecf5 0);
+    position: relative;
+    transition: background .5s ease;
+  }
+  .health-ring::before {
+    content: "";
+    position: absolute;
+    inset: 9px;
+    border-radius: 50%;
+    background: var(--card2);
+  }
+  .ring-inner {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: baseline;
+    gap: 1px;
+  }
+  .ring-inner span {
+    font-size: 27px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -.5px;
+  }
+  .ring-inner small { font-size: 12px; color: var(--muted); }
+
+  .health-info { flex: 1; min-width: 0; }
+  .health-title { font-size: 15px; font-weight: 700; margin-bottom: 6px; color: #16202e; }
+  .health-desc { font-size: 12.5px; color: var(--muted); line-height: 1.65; }
+
+  .metrics {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .metric {
+    background: var(--card2);
+    border: 1px solid var(--border);
+    border-radius: 11px;
+    padding: 11px 13px;
+  }
+  .metric .label {
+    font-size: 11.5px;
+    color: var(--muted);
+    display: block;
+    margin-bottom: 6px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .metric .value {
+    font-size: 16px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: #16202e;
+  }
+  .metric .value em {
+    font-style: normal;
+    font-size: 11.5px;
+    font-weight: 500;
+    color: var(--faint);
+    margin-left: 2px;
+  }
+
+  .fee-box {
+    margin-top: 14px;
+    background: linear-gradient(135deg, #fff8f0, #fff1e4);
+    border: 1px solid #fbe0c7;
+    border-radius: 13px;
+    padding: 15px 17px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+  .fee-label {
+    font-size: 11.5px;
+    color: #b45309;
+    font-weight: 700;
+    display: block;
+    margin-bottom: 6px;
+    letter-spacing: .3px;
+  }
+  .fee-amount {
+    font-size: 27px;
+    font-weight: 800;
+    color: #c2410c;
+    letter-spacing: -.6px;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+  }
+  .fee-amount small { font-size: 15px; font-weight: 700; margin-right: 2px; }
+  .fee-detail {
+    font-size: 12px;
+    color: #9a6a35;
+    line-height: 1.85;
+    text-align: right;
+  }
+  .fee-detail b { color: #7c2d12; font-variant-numeric: tabular-nums; }
+
+  .msg {
+    margin-top: 14px;
+    padding: 11px 13px;
+    border-radius: 10px;
+    font-size: 12.5px;
+    line-height: 1.65;
+    display: none;
+  }
+  .msg.show { display: block; }
+  .msg.warn { background: #fef2f2; border: 1px solid #fbd5d5; color: #b91c1c; }
+  .msg.info { background: #eef5ff; border: 1px solid #cfe0fb; color: #1d4ed8; }
+  .msg.success { background: #ecfdf3; border: 1px solid #bbf7d0; color: #15803d; }
+
+  /* ---------- 按钮 ---------- */
+  .actions { margin-top: 18px; display: flex; gap: 10px; }
+
+  button { font-family: inherit; }
+
+  .btn-primary {
+    flex: 1;
+    font-size: 13.5px;
+    font-weight: 700;
+    border-radius: 10px;
+    padding: 12px 18px;
+    cursor: pointer;
+    border: 1px solid transparent;
+    background: linear-gradient(180deg, #ef4444, #d92632);
+    color: #fff;
+    box-shadow: 0 8px 18px -8px rgba(217, 38, 50, .7);
+    transition: filter .15s, transform .08s;
+  }
+  .btn-primary:hover { filter: brightness(1.06); }
+  .btn-primary:active { transform: translateY(1px); }
+
+  .btn-ghost {
+    font-size: 13.5px;
+    font-weight: 600;
+    border-radius: 10px;
+    padding: 12px 18px;
+    cursor: pointer;
+    background: #fff;
+    border: 1px solid var(--line);
+    color: #334155;
+    transition: background .15s, transform .08s;
+  }
+  .btn-ghost:hover { background: #f4f7fc; }
+  .btn-ghost:active { transform: translateY(1px); }
+
+  /* ---------- 历史记录 ---------- */
+  .history { margin-top: 18px; }
+
+  .hist-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+  }
+  .hist-head h2 { margin-bottom: 0; }
+
+  .hist-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .summary {
+    font-size: 12px;
+    color: var(--muted);
+    display: flex;
+    gap: 14px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .summary b { color: #16202e; font-variant-numeric: tabular-nums; }
+
+  .hist-actions {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+  }
+  .hist-actions .btn-ghost {
+    padding: 6px 12px;
+    font-size: 12px;
+    border-radius: 8px;
+    white-space: nowrap;
+  }
+
+  /* 导出下拉 */
+  .export-wrap { position: relative; }
+
+  .export-menu {
+    display: none;
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 11px;
+    box-shadow: 0 14px 34px -14px rgba(15, 23, 42, .3);
+    padding: 5px;
+    z-index: 60;
+    min-width: 210px;
+  }
+  .export-menu.show { display: block; }
+  .export-menu button {
+    display: block;
+    width: 100%;
+    text-align: left;
+    font-family: inherit;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: #334155;
+    background: none;
+    border: none;
+    padding: 9px 12px;
+    border-radius: 7px;
+    cursor: pointer;
+    transition: background .15s;
+    white-space: nowrap;
+  }
+  .export-menu button:hover { background: #f4f7fc; }
+  .export-menu .menu-sep {
+    height: 1px;
+    background: #eef2f8;
+    margin: 4px 6px;
+  }
+
+  .table-view { display: block; }
+
+  .table-scroll { overflow-x: auto; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12.5px;
+    min-width: 1040px;
+  }
+  th {
+    text-align: left;
+    color: var(--muted);
+    font-weight: 600;
+    font-size: 11.5px;
+    padding: 9px 10px;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  td {
+    padding: 11px 10px;
+    border-bottom: 1px solid #eef2f8;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    color: #334155;
+  }
+  tbody tr:hover { background: #f8fafd; }
+  tbody tr:last-child td { border-bottom: none; }
+
+  .tag {
+    display: inline-block;
+    padding: 2px 9px;
+    border-radius: 20px;
+    font-size: 11.5px;
+    font-weight: 700;
+  }
+  .tag.g { background: #e7f7ec; color: #15803d; }
+  .tag.y { background: #fef3e2; color: #b45309; }
+  .tag.r { background: #fdeaea; color: #b91c1c; }
+
+  .fee-cell {
+    color: #c2410c;
+    font-weight: 700;
+    cursor: help;
+  }
+
+  .op-cell { display: flex; gap: 1px; }
+
+  .edit,
+  .del {
+    background: none;
+    border: none;
+    color: #b0bac9;
+    cursor: pointer;
+    font-size: 14px;
+    padding: 4px 7px;
+    border-radius: 6px;
+    line-height: 1;
+    transition: all .15s;
+  }
+  .edit:hover { color: #2563eb; background: #eef5ff; }
+  .del:hover { color: var(--red); background: #fdeaea; }
+
+  /* ---------- 卡片视图（手机模式） ---------- */
+  .cards-view { display: none; }
+
+  .hist-card {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 13px;
+    padding: 13px 14px;
+    margin-bottom: 10px;
+  }
+  .hist-card:last-child { margin-bottom: 0; }
+
+  .hc-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    padding-bottom: 9px;
+    border-bottom: 1px dashed #eef2f8;
+    margin-bottom: 9px;
+  }
+  .hc-time {
+    font-size: 12.5px;
+    font-weight: 700;
+    color: #16202e;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .hc-rows {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+  .hc-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    font-size: 12.5px;
+    align-items: baseline;
+  }
+  .hc-k {
+    color: var(--muted);
+    flex: 0 0 auto;
+    font-weight: 500;
+    font-size: 12px;
+  }
+  .hc-v {
+    color: #334155;
+    font-weight: 700;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    word-break: break-word;
+  }
+
+  .hc-foot {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    padding-top: 10px;
+    margin-top: 10px;
+    border-top: 1px dashed #eef2f8;
+  }
+  .hc-fee {
+    font-size: 16px;
+    font-weight: 800;
+    color: #c2410c;
+    font-variant-numeric: tabular-nums;
+  }
+  .hc-ops { display: flex; gap: 6px; }
+  .hc-ops button {
+    font-family: inherit;
+    font-size: 11.5px;
+    font-weight: 600;
+    padding: 6px 12px;
+    border-radius: 7px;
+    border: 1px solid var(--line);
+    background: #fff;
+    color: #334155;
+    cursor: pointer;
+    transition: all .15s;
+  }
+  .hc-ops .edit { border-color: #cfe0fb; color: #2563eb; background: #f5f9ff; }
+  .hc-ops .edit:hover { background: #eef5ff; }
+  .hc-ops .del { border-color: #fbd5d5; color: #b91c1c; background: #fff8f8; }
+  .hc-ops .del:hover { background: #fef2f2; }
+
+  .empty {
+    text-align: center;
+    color: #a3b0c2;
+    padding: 34px 10px;
+    font-size: 13px;
+  }
+
+  footer {
+    margin-top: 26px;
+    font-size: 11.5px;
+    color: #8a97a9;
+    line-height: 1.9;
+    padding: 0 4px;
+  }
+  footer b { color: #55637a; font-weight: 600; }
+
+  /* ---------- 设置弹窗 ---------- */
+  .modal-mask {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, .45);
+    backdrop-filter: blur(3px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    z-index: 200;
+  }
+  .modal-mask.show { display: flex; }
+
+  .modal {
+    width: 100%;
+    max-width: 420px;
+    max-height: 90vh;
+    overflow-y: auto;
+    background: #fff;
+    border-radius: 18px;
+    box-shadow: 0 30px 80px -20px rgba(15, 23, 42, .55);
+    animation: pop .18s ease;
+  }
+  @keyframes pop {
+    from { transform: scale(.96); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+
+  .modal-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 18px 20px 0;
+  }
+  .modal-head h3 { font-size: 16px; font-weight: 700; color: #16202e; }
+
+  .modal-close {
+    background: none;
+    border: none;
+    font-size: 15px;
+    color: #94a3b8;
+    cursor: pointer;
+    padding: 4px 9px;
+    border-radius: 8px;
+    line-height: 1;
+    transition: all .15s;
+  }
+  .modal-close:hover { background: #f1f5fb; color: #334155; }
+
+  .modal-body {
+    padding: 18px 20px 4px;
+    display: grid;
+    gap: 14px;
+  }
+
+  .modal-section-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: #94a3b8;
+    letter-spacing: .5px;
+    margin-top: 2px;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+  .modal-section-title::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: #eef2f8;
+  }
+
+  .modal-hint {
+    font-size: 11.5px;
+    color: #94a3b8;
+    line-height: 1.7;
+    margin-top: -4px;
+  }
+
+  .modal-err {
+    display: none;
+    font-size: 12px;
+    color: #b91c1c;
+    background: #fef2f2;
+    border: 1px solid #fbd5d5;
+    border-radius: 8px;
+    padding: 8px 11px;
+    line-height: 1.6;
+  }
+  .modal-err.show { display: block; }
+
+  .modal-foot {
+    padding: 16px 20px 20px;
+    display: flex;
+    gap: 10px;
+  }
+  .modal-foot button { flex: 1; }
+
+  .checkbox-row {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    cursor: pointer;
+    font-size: 13px;
+    color: #334155;
+    font-weight: 600;
+    padding: 4px 0;
+    user-select: none;
+  }
+  .checkbox-row input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--accent);
+    cursor: pointer;
+    flex: 0 0 auto;
+  }
+
+  .recalc-btn {
+    width: 100%;
+    padding: 10px;
+    font-size: 12.5px;
+  }
+
+  /* ================= 手机模式 ================= */
+  body.phone-mode { padding: 14px 8px 40px; }
+
+  body.phone-mode .app {
+    max-width: 440px;
+    background: #f5f8fc;
+    padding: 12px;
+    border-radius: 28px;
+    box-shadow: 0 0 0 5px #e6ecf5, 0 30px 70px -24px rgba(15, 23, 42, .4);
+  }
+
+  body.phone-mode header { margin-bottom: 14px; align-items: center; }
+  body.phone-mode h1 { font-size: 15.5px; gap: 8px; }
+  body.phone-mode h1::before { width: 4px; height: 16px; }
+  body.phone-mode .sub { display: none; }
+  body.phone-mode .head-actions { gap: 6px; flex-wrap: nowrap; }
+  body.phone-mode .mode-btn {
+    width: 38px;
+    height: 38px;
+    padding: 0;
+    border-radius: 11px;
+    font-size: 16px;
+  }
+  body.phone-mode .mode-btn .ico { font-size: 16px; }
+  body.phone-mode .mode-btn .txt { display: none; }
+
+  body.phone-mode .grid { grid-template-columns: 1fr; gap: 12px; }
+
+  body.phone-mode .card {
+    padding: 14px;
+    border-radius: 16px;
+  }
+  body.phone-mode .card h2 { font-size: 13px; margin-bottom: 12px; }
+
+  body.phone-mode .edit-banner {
+    padding: 8px 11px;
+    font-size: 11.5px;
+    border-radius: 9px;
+    margin-bottom: 10px;
+  }
+  body.phone-mode .edit-banner button { padding: 5px 10px; font-size: 11px; }
+
+  body.phone-mode .timer-panel { padding: 10px; border-radius: 12px; margin-bottom: 12px; }
+  body.phone-mode .timer-btns { gap: 8px; }
+  body.phone-mode .timer-btn { height: 44px; font-size: 13px; border-radius: 10px; }
+  body.phone-mode .timer-meta { margin-top: 8px; padding: 8px 10px; border-radius: 9px; }
+  body.phone-mode .tm-val { font-size: 12px; }
+  body.phone-mode .duration-edit { margin-top: 8px; }
+  body.phone-mode .duration-edit input[type="number"] { width: 42px; height: 28px; font-size: 13px; }
+
+  body.phone-mode .form-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+  body.phone-mode label { font-size: 11.5px; margin-bottom: 5px; }
+  body.phone-mode input[type="number"],
+  body.phone-mode input[type="datetime-local"] {
+    height: 40px;
+    font-size: 14px;
+    border-radius: 9px;
+  }
+  body.phone-mode .input-wrap input[type="number"] { padding-right: 48px; }
+  body.phone-mode .unit { font-size: 11px; right: 10px; }
+  body.phone-mode .hint { font-size: 11px; margin-top: 11px; line-height: 1.6; }
+
+  body.phone-mode .actions { margin-top: 14px; }
+  body.phone-mode .btn-primary,
+  body.phone-mode .btn-ghost { padding: 11px 14px; font-size: 13px; }
+
+  body.phone-mode .health-box { padding: 12px; gap: 12px; border-radius: 12px; margin-bottom: 10px; }
+  body.phone-mode .health-ring { width: 78px; height: 78px; flex-basis: 78px; }
+  body.phone-mode .health-ring::before { inset: 7px; }
+  body.phone-mode .ring-inner span { font-size: 21px; }
+  body.phone-mode .health-title { font-size: 13.5px; margin-bottom: 4px; }
+  body.phone-mode .health-desc { font-size: 11.5px; line-height: 1.55; }
+
+  body.phone-mode .metrics { gap: 7px; }
+  body.phone-mode .metric { padding: 9px 10px; border-radius: 9px; }
+  body.phone-mode .metric .label { font-size: 10.5px; margin-bottom: 4px; }
+  body.phone-mode .metric .value { font-size: 14px; }
+
+  body.phone-mode .fee-box { padding: 12px 13px; border-radius: 12px; margin-top: 10px; gap: 10px; }
+  body.phone-mode .fee-label { font-size: 10.5px; }
+  body.phone-mode .fee-amount { font-size: 22px; }
+  body.phone-mode .fee-amount small { font-size: 13px; }
+  body.phone-mode .fee-detail { font-size: 11px; line-height: 1.75; }
+
+  body.phone-mode .msg { margin-top: 10px; font-size: 11.5px; padding: 9px 11px; border-radius: 9px; }
+
+  /* 手机历史记录布局 */
+  body.phone-mode .history { margin-top: 12px; }
+  body.phone-mode .hist-head {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+  body.phone-mode .hist-head h2 { font-size: 13px; margin-bottom: 0; }
+  body.phone-mode .hist-right {
+    justify-content: space-between;
+    gap: 8px;
+    width: 100%;
+  }
+  body.phone-mode .summary { font-size: 10.5px; gap: 8px; }
+  body.phone-mode .hist-actions { gap: 5px; }
+  body.phone-mode .hist-actions .btn-ghost {
+    padding: 5px 9px;
+    font-size: 11px;
+    border-radius: 7px;
+  }
+
+  /* 手机模式：隐藏表格，显示卡片 */
+  body.phone-mode .table-view { display: none; }
+  body.phone-mode .cards-view { display: block; }
+
+  body.phone-mode .empty { padding: 24px 10px; font-size: 12px; }
+  body.phone-mode footer { margin-top: 16px; font-size: 10.5px; line-height: 1.8; }
+
+  body.phone-mode .export-menu {
+    right: 0;
+    min-width: 190px;
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header>
+    <div>
+      <h1>秦PLUS DM-i 55km · 家充电池记录</h1>
+      <p class="sub">起止计时 · 自动分峰谷计价 · 电池健康测算</p>
+    </div>
+    <div class="head-actions">
+      <button class="mode-btn" id="settingsBtn"><span class="ico">⚙</span><span class="txt">设置</span></button>
+      <button class="mode-btn" id="modeBtn"><span class="ico">📱</span><span class="txt">手机模式</span></button>
+    </div>
+  </header>
+
+  <main class="grid">
+
+    <!-- ============ 输入区 ============ -->
+    <section class="card">
+      <h2>充电数据录入</h2>
+
+      <div class="edit-banner" id="editBanner">
+        <span>✎ 正在编辑历史记录，修改后点击「更新记录」保存</span>
+        <button type="button" id="cancelEditBtn">取消编辑</button>
+      </div>
+
+      <div class="timer-panel">
+        <div class="timer-btns">
+          <button type="button" class="timer-btn start" id="startBtn">
+            <span class="tb-ico">▶</span>开始充电
+          </button>
+          <button type="button" class="timer-btn end" id="endBtn">
+            <span class="tb-ico">■</span>结束充电
+          </button>
+        </div>
+
+        <div class="timer-meta">
+          <div class="timer-time">
+            <span class="tm-label">开始</span>
+            <span class="tm-val" id="startTimeLabel">未记录</span>
+          </div>
+          <span class="timer-arrow">→</span>
+          <div class="timer-time">
+            <span class="tm-label">结束</span>
+            <span class="tm-val" id="endTimeLabel">未记录</span>
+          </div>
+        </div>
+
+        <div class="duration-edit">
+          <span class="de-label">充电时长</span>
+          <input type="number" id="hours" value="0" min="0" step="1" inputmode="numeric" />
+          <span class="de-unit">时</span>
+          <input type="number" id="minutes" value="0" min="0" max="59" step="1" inputmode="numeric" />
+          <span class="de-unit">分</span>
+        </div>
+      </div>
+
+      <div class="form-grid">
+        <div class="field">
+          <label>环境温度</label>
+          <div class="input-wrap">
+            <input type="number" id="temp" value="25" step="0.1" inputmode="decimal" />
+            <span class="unit">℃</span>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>充电枪显示电量</label>
+          <div class="input-wrap">
+            <input type="number" id="gun" step="0.01" min="0" placeholder="例如 6.85" inputmode="decimal" />
+            <span class="unit">kWh</span>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>充电前剩余电量</label>
+          <div class="input-wrap">
+            <input type="number" id="socStart" value="25" step="1" min="0" max="100" inputmode="decimal" />
+            <span class="unit">%</span>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>充电后电量</label>
+          <div class="input-wrap">
+            <input type="number" id="socEnd" value="100" step="1" min="0" max="100" inputmode="decimal" />
+            <span class="unit">%</span>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>充电前电表读数</label>
+          <div class="input-wrap">
+            <input type="number" id="meterBefore" step="0.01" min="0" placeholder="自动带入上次读数" inputmode="decimal" />
+            <span class="unit">kWh</span>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>充电后电表读数</label>
+          <div class="input-wrap">
+            <input type="number" id="meterAfter" step="0.01" min="0" placeholder="例如 1241.92" inputmode="decimal" />
+            <span class="unit">kWh</span>
+          </div>
+        </div>
+
+        <div class="field full">
+          <label>记录时间 <b>（可手动修改）</b></label>
+          <input type="datetime-local" id="recordTime" />
+        </div>
+      </div>
+
+      <p class="hint">
+        点击 <b>开始充电</b> / <b>结束充电</b> 自动记录当前时间，并按设置中的峰谷时段拆分计价；
+        充电时长可直接手动修改。保存后表单会自动重置。
+      </p>
+
+      <div class="actions">
+        <button class="btn-primary" id="saveBtn">保存本次记录</button>
+        <button class="btn-ghost" id="resetBtn">重置</button>
+      </div>
+    </section>
+
+    <!-- ============ 结果区 ============ -->
+    <section class="card">
+      <h2>测算结果</h2>
+
+      <div class="health-box">
+        <div class="health-ring" id="ring">
+          <div class="ring-inner">
+            <span id="healthValue">--</span><small>%</small>
+          </div>
+        </div>
+        <div class="health-info">
+          <div class="health-title" id="healthTitle">等待录入数据</div>
+          <div class="health-desc" id="healthDesc">
+            输入充电前后电量与充电枪电量后，将自动估算电池健康度。
+          </div>
+        </div>
+      </div>
+
+      <div class="metrics">
+        <div class="metric">
+          <span class="label">理论应充入（电池侧）</span>
+          <span class="value"><span id="rTheo">--</span><em>kWh</em></span>
+        </div>
+        <div class="metric">
+          <span class="label">估算电池实际容量</span>
+          <span class="value"><span id="rRealCap">--</span><em>kWh</em></span>
+        </div>
+        <div class="metric">
+          <span class="label">电表用电量</span>
+          <span class="value"><span id="rMeter">--</span><em>kWh</em></span>
+        </div>
+        <div class="metric">
+          <span class="label">充电枪输出电量</span>
+          <span class="value"><span id="rGun">--</span><em>kWh</em></span>
+        </div>
+        <div class="metric">
+          <span class="label">充电损耗率</span>
+          <span class="value"><span id="rLoss">--</span><em>%</em></span>
+        </div>
+        <div class="metric">
+          <span class="label">平均充电功率</span>
+          <span class="value"><span id="rPower">--</span><em>kW</em></span>
+        </div>
+        <div class="metric">
+          <span class="label">充电前剩余电量</span>
+          <span class="value"><span id="rRemain">--</span><em>kWh</em></span>
+        </div>
+        <div class="metric">
+          <span class="label">容量偏差</span>
+          <span class="value"><span id="rDev">--</span><em>%</em></span>
+        </div>
+      </div>
+
+      <div class="fee-box">
+        <div>
+          <span class="fee-label">本次充电电费估算</span>
+          <div class="fee-amount"><small>¥</small><span id="rFee">--</span></div>
+        </div>
+        <div class="fee-detail">
+          <div>谷段 <b id="rValleyUsage">--</b> kWh × <b id="rValleyPrice">--</b> 元</div>
+          <div>峰段 <b id="rPeakUsage">--</b> kWh × <b id="rPeakPrice">--</b> 元</div>
+          <div>谷段占比 <b id="rValleyPct">--</b></div>
+        </div>
+      </div>
+
+      <div class="msg" id="msg"></div>
+    </section>
+
+  </main>
+
+  <!-- ============ 历史记录 ============ -->
+  <section class="card history">
+    <div class="hist-head">
+      <h2>历史充电记录</h2>
+      <div class="hist-right">
+        <div class="summary">
+          <span>记录数 <b id="cntRecords">0</b></span>
+          <span>平均健康度 <b id="avgHealth">--</b></span>
+          <span>累计电费 <b id="sumFee">¥0.00</b></span>
+        </div>
+        <div class="hist-actions">
+          <div class="export-wrap">
+            <button class="btn-ghost" id="exportBtn">⬇ 导出</button>
+            <div class="export-menu" id="exportMenu">
+              <button data-format="xls">📗 导出表格（Excel）</button>
+              <button data-format="csv">📊 导出 CSV</button>
+              <div class="menu-sep"></div>
+              <button data-format="json">💾 导出 JSON 备份</button>
+            </div>
+          </div>
+          <button class="btn-ghost" id="importBtn">⬆ 导入</button>
+          <button class="btn-ghost" id="clearBtn">清空</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 桌面：表格 -->
+    <div class="table-view">
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>记录时间</th>
+              <th>电量区间</th>
+              <th>电表读数</th>
+              <th>电表用电</th>
+              <th>枪端电量</th>
+              <th>充电时段</th>
+              <th>时长</th>
+              <th>温度</th>
+              <th>健康度</th>
+              <th>电费</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="historyBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 手机：卡片 -->
+    <div class="cards-view" id="cardsView"></div>
+
+    <div class="empty" id="emptyTip">暂无记录，录入数据后点击「保存本次记录」</div>
+  </section>
+
+  <footer>
+    <b>测算原理：</b>电表用电量 = 充电后读数 − 充电前读数；根据充电起止时间与设置中的谷时段区间求交集，
+    自动拆分谷段与峰段用电量，分别乘以对应电价得出电费。<br />
+    电池侧：以充电枪显示电量近似作为进入电池的电量，实测容量 = 枪端电量 ÷ 本次充电百分比，
+    健康度 = 实测容量 ÷ 标称容量 × 100%。所有设置与记录保存在本机浏览器中。
+  </footer>
+
+</div>
+
+<!-- 隐藏的文件导入输入框 -->
+<input type="file" id="importInput" accept=".json,application/json" style="display:none" />
+
+<!-- ============ 设置弹窗 ============ -->
+<div class="modal-mask" id="settingsModal">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+    <div class="modal-head">
+      <h3 id="settingsTitle">设置</h3>
+      <button class="modal-close" id="settingsClose" title="关闭">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-section-title">电池参数</div>
+      <div class="field">
+        <label>电池标称容量 <b>（55km 版默认 8.32）</b></label>
+        <div class="input-wrap">
+          <input type="number" id="setCap" step="0.01" min="0" inputmode="decimal" />
+          <span class="unit">kWh</span>
+        </div>
+      </div>
+
+      <div class="modal-section-title">峰谷电价与时段</div>
+      <div class="field">
+        <label>峰时电价</label>
+        <div class="input-wrap">
+          <input type="number" id="setPeak" step="0.01" min="0" inputmode="decimal" />
+          <span class="unit">元/kWh</span>
+        </div>
+      </div>
+      <div class="field">
+        <label>谷时电价</label>
+        <div class="input-wrap">
+          <input type="number" id="setValley" step="0.01" min="0" inputmode="decimal" />
+          <span class="unit">元/kWh</span>
+        </div>
+      </div>
+      <div class="field">
+        <label>谷时段开始时间</label>
+        <input type="time" id="setValleyStart" value="22:00" />
+      </div>
+      <div class="field">
+        <label>谷时段结束时间</label>
+        <input type="time" id="setValleyEnd" value="08:00" />
+      </div>
+      <p class="modal-hint">
+        谷时段以外的时段按峰时电价计费；支持跨天时段（如 22:00 - 08:00）。
+      </p>
+
+      <div class="modal-section-title">历史电费</div>
+      <label class="checkbox-row">
+        <input type="checkbox" id="setLockHistory" />
+        <span>锁定历史电费</span>
+      </label>
+      <p class="modal-hint">
+        勾选后，修改峰谷电价或时段不会自动重算历史记录电费；取消勾选并保存设置时，会自动按新电价重算全部记录。
+      </p>
+      <button type="button" class="btn-ghost recalc-btn" id="recalcAllBtn">按当前电价重算全部记录</button>
+
+      <div class="modal-section-title">本次充电时间</div>
+      <div class="field">
+        <label>开始充电时间</label>
+        <input type="datetime-local" id="setStartTime" />
+      </div>
+      <div class="field">
+        <label>结束充电时间</label>
+        <input type="datetime-local" id="setEndTime" />
+      </div>
+      <p class="modal-hint">
+        修改起止时间后，主界面的充电时长会自动同步；也可以只填开始时间，回到主界面点「结束充电」。
+      </p>
+
+      <div class="modal-err" id="settingsErr"></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-ghost" id="settingsCancel">取消</button>
+      <button class="btn-primary" id="settingsSave">保存设置</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ---------------- 存储键 ---------------- */
+  const KEY_SETTINGS = "byd_charge_settings_v7";
+  const KEY_LAST_METER = "byd_charge_last_meter_v7";
+  const KEY_RECORDS = "byd_charge_records_v7";
+
+  /* ---------------- 元素引用 ---------------- */
+  const el = {
+    temp: document.getElementById("temp"),
+    socStart: document.getElementById("socStart"),
+    socEnd: document.getElementById("socEnd"),
+    meterBefore: document.getElementById("meterBefore"),
+    meterAfter: document.getElementById("meterAfter"),
+    gun: document.getElementById("gun"),
+    recordTime: document.getElementById("recordTime"),
+
+    startBtn: document.getElementById("startBtn"),
+    endBtn: document.getElementById("endBtn"),
+    hours: document.getElementById("hours"),
+    minutes: document.getElementById("minutes"),
+    startTimeLabel: document.getElementById("startTimeLabel"),
+    endTimeLabel: document.getElementById("endTimeLabel"),
+
+    editBanner: document.getElementById("editBanner"),
+    cancelEditBtn: document.getElementById("cancelEditBtn"),
+
+    ring: document.getElementById("ring"),
+    healthValue: document.getElementById("healthValue"),
+    healthTitle: document.getElementById("healthTitle"),
+    healthDesc: document.getElementById("healthDesc"),
+    rTheo: document.getElementById("rTheo"),
+    rRealCap: document.getElementById("rRealCap"),
+    rMeter: document.getElementById("rMeter"),
+    rGun: document.getElementById("rGun"),
+    rLoss: document.getElementById("rLoss"),
+    rPower: document.getElementById("rPower"),
+    rRemain: document.getElementById("rRemain"),
+    rDev: document.getElementById("rDev"),
+    rFee: document.getElementById("rFee"),
+    rValleyUsage: document.getElementById("rValleyUsage"),
+    rPeakUsage: document.getElementById("rPeakUsage"),
+    rValleyPrice: document.getElementById("rValleyPrice"),
+    rPeakPrice: document.getElementById("rPeakPrice"),
+    rValleyPct: document.getElementById("rValleyPct"),
+    msg: document.getElementById("msg"),
+
+    saveBtn: document.getElementById("saveBtn"),
+    resetBtn: document.getElementById("resetBtn"),
+    clearBtn: document.getElementById("clearBtn"),
+    exportBtn: document.getElementById("exportBtn"),
+    exportMenu: document.getElementById("exportMenu"),
+    importBtn: document.getElementById("importBtn"),
+    importInput: document.getElementById("importInput"),
+    modeBtn: document.getElementById("modeBtn"),
+    settingsBtn: document.getElementById("settingsBtn"),
+
+    historyBody: document.getElementById("historyBody"),
+    cardsView: document.getElementById("cardsView"),
+    emptyTip: document.getElementById("emptyTip"),
+    cntRecords: document.getElementById("cntRecords"),
+    avgHealth: document.getElementById("avgHealth"),
+    sumFee: document.getElementById("sumFee"),
+
+    modal: document.getElementById("settingsModal"),
+    settingsClose: document.getElementById("settingsClose"),
+    settingsCancel: document.getElementById("settingsCancel"),
+    settingsSave: document.getElementById("settingsSave"),
+    setCap: document.getElementById("setCap"),
+    setPeak: document.getElementById("setPeak"),
+    setValley: document.getElementById("setValley"),
+    setValleyStart: document.getElementById("setValleyStart"),
+    setValleyEnd: document.getElementById("setValleyEnd"),
+    setLockHistory: document.getElementById("setLockHistory"),
+    recalcAllBtn: document.getElementById("recalcAllBtn"),
+    setStartTime: document.getElementById("setStartTime"),
+    setEndTime: document.getElementById("setEndTime"),
+    settingsErr: document.getElementById("settingsErr"),
+  };
+
+  const DEFAULTS = {
+    cap: 8.32,
+    peak: 0.62,
+    valley: 0.31,
+    valleyStart: "22:00",
+    valleyEnd: "08:00",
+    lockHistory: false,
+    temp: "25",
+    socStart: "25",
+    socEnd: "100",
+  };
+
+  /* ---------------- 状态 ---------------- */
+  let settings = {
+    cap: DEFAULTS.cap,
+    peak: DEFAULTS.peak,
+    valley: DEFAULTS.valley,
+    valleyStart: DEFAULTS.valleyStart,
+    valleyEnd: DEFAULTS.valleyEnd,
+    lockHistory: DEFAULTS.lockHistory,
+  };
+  let records = [];
+  let current = null;
+  let lastMeterAfter = null;
+
+  let chargeStart = "";
+  let chargeEnd = "";
+
+  let editingId = null;
+
+  /* ---------------- 工具函数 ---------------- */
+  const num = (v) => {
+    const n = parseFloat(v);
+    return isFinite(n) ? n : NaN;
+  };
+
+  const fmt = (v, d = 2) => (isFinite(v) ? v.toFixed(d) : "--");
+
+  const pad = (n) => String(n).padStart(2, "0");
+
+  function toLocalInput(date) {
+    const d = new Date(date);
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  }
+
+  function nowLocalInput() {
+    return toLocalInput(new Date());
+  }
+
+  function formatDateTime(v) {
+    if (!v) return "--";
+    const d = new Date(v);
+    if (isNaN(d.getTime())) return v;
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  }
+
+  function formatShort(v) {
+    if (!v) return "未记录";
+    const d = new Date(v);
+    if (isNaN(d.getTime())) return v;
+    return `${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  }
+
+  function durationTextFromMin(mins) {
+    if (!(mins > 0)) return "--";
+    const total = Math.round(mins);
+    const h = Math.floor(total / 60);
+    const m = total % 60;
+    if (h > 0 && m > 0) return `${h}小时${m}分`;
+    if (h > 0) return `${h}小时`;
+    return `${m}分钟`;
+  }
+
+  function timeToMin(str) {
+    if (!str) return NaN;
+    const parts = String(str).split(":");
+    if (parts.length < 2) return NaN;
+    const h = parseInt(parts[0], 10);
+    const m = parseInt(parts[1], 10);
+    if (!isFinite(h) || !isFinite(m)) return NaN;
+    return ((h * 60 + m) % 1440 + 1440) % 1440;
+  }
+
+  function circularOverlap(S, E, segStart, segEnd) {
+    if (!isFinite(S) || !isFinite(E) || E <= S) return 0;
+    if (!isFinite(segStart) || !isFinite(segEnd) || segStart === segEnd) return 0;
+
+    const segs = [];
+    if (segStart < segEnd) {
+      segs.push([segStart, segEnd]);
+    } else {
+      segs.push([segStart, 1440]);
+      segs.push([0, segEnd]);
+    }
+
+    let total = 0;
+    for (const [a, b] of segs) {
+      if (b <= a) continue;
+      const kMin = Math.floor((S - b) / 1440) + 1;
+      const kMax = Math.ceil((E - a) / 1440) - 1;
+      for (let k = kMin; k <= kMax; k++) {
+        const lo = Math.max(S, a + k * 1440);
+        const hi = Math.min(E, b + k * 1440);
+        if (hi > lo) total += hi - lo;
+      }
+    }
+    return total;
+  }
+
+  function setMsg(text, type) {
+    if (!text) {
+      el.msg.className = "msg";
+      el.msg.textContent = "";
+      return;
+    }
+    el.msg.className = "msg show " + type;
+    el.msg.textContent = text;
+  }
+
+  function escapeHtml(s) {
+    return String(s == null ? "" : s)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+
+  /* ---------------- 本地存储 ---------------- */
+  function loadSettings() {
+    try {
+      const raw = localStorage.getItem(KEY_SETTINGS);
+      if (!raw) return;
+      const s = JSON.parse(raw);
+      if (isFinite(s.cap) && s.cap > 0) settings.cap = s.cap;
+      if (isFinite(s.peak) && s.peak >= 0) settings.peak = s.peak;
+      if (isFinite(s.valley) && s.valley >= 0) settings.valley = s.valley;
+      if (typeof s.valleyStart === "string" && /^\d{1,2}:\d{2}$/.test(s.valleyStart)) settings.valleyStart = s.valleyStart;
+      if (typeof s.valleyEnd === "string" && /^\d{1,2}:\d{2}$/.test(s.valleyEnd)) settings.valleyEnd = s.valleyEnd;
+      if (typeof s.lockHistory === "boolean") settings.lockHistory = s.lockHistory;
+    } catch (e) { /* 忽略 */ }
+  }
+
+  function persistSettings() {
+    try {
+      localStorage.setItem(KEY_SETTINGS, JSON.stringify(settings));
+    } catch (e) { /* 忽略 */ }
+  }
+
+  function loadLastMeter() {
+    try {
+      const raw = localStorage.getItem(KEY_LAST_METER);
+      const v = parseFloat(raw);
+      if (isFinite(v) && v >= 0) lastMeterAfter = v;
+    } catch (e) { /* 忽略 */ }
+  }
+
+  function persistLastMeter(v) {
+    try {
+      localStorage.setItem(KEY_LAST_METER, String(v));
+    } catch (e) { /* 忽略 */ }
+  }
+
+  function loadRecords() {
+    try {
+      const raw = localStorage.getItem(KEY_RECORDS);
+      if (!raw) return;
+      const arr = JSON.parse(raw);
+      if (Array.isArray(arr)) records = arr;
+    } catch (e) { records = []; }
+  }
+
+  function persistRecords() {
+    try {
+      localStorage.setItem(KEY_RECORDS, JSON.stringify(records));
+    } catch (e) { /* 忽略 */ }
+  }
+
+  /* ---------------- 计时器 UI ---------------- */
+  function updateTimerLabels() {
+    el.startTimeLabel.textContent = chargeStart ? formatShort(chargeStart) : "未记录";
+    el.endTimeLabel.textContent = chargeEnd ? formatShort(chargeEnd) : "未记录";
+  }
+
+  function getDurationMinFromInputs() {
+    let h = num(el.hours.value);
+    let m = num(el.minutes.value);
+    if (!isFinite(h) || h < 0) h = 0;
+    if (!isFinite(m) || m < 0) m = 0;
+    if (m > 59) m = 59;
+    return h * 60 + m;
+  }
+
+  function setDurationInputs(totalMin) {
+    if (!isFinite(totalMin) || totalMin <= 0) {
+      el.hours.value = "0";
+      el.minutes.value = "0";
+      return;
+    }
+    const total = Math.round(totalMin);
+    el.hours.value = String(Math.floor(total / 60));
+    el.minutes.value = String(total % 60);
+  }
+
+  /* ---------------- 编辑状态 UI ---------------- */
+  function updateEditUI() {
+    const editing = !!editingId;
+    el.saveBtn.textContent = editing ? "更新记录" : "保存本次记录";
+    el.resetBtn.textContent = editing ? "取消编辑" : "重置";
+    el.editBanner.classList.toggle("show", editing);
+  }
+
+  /* ---------------- 表单重置（新增模式） ---------------- */
+  function resetFormForNew() {
+    el.temp.value = DEFAULTS.temp;
+    el.socStart.value = DEFAULTS.socStart;
+    el.socEnd.value = DEFAULTS.socEnd;
+    el.meterBefore.value = lastMeterAfter !== null ? lastMeterAfter.toFixed(2) : "";
+    el.meterAfter.value = "";
+    el.gun.value = "";
+    chargeStart = "";
+    chargeEnd = "";
+    el.hours.value = "0";
+    el.minutes.value = "0";
+    el.recordTime.value = nowLocalInput();
+    updateTimerLabels();
+    current = null;
+    render(null);
+  }
+
+  /* ---------------- 同步最新电表读数 ---------------- */
+  function syncLastMeterFromLatest() {
+    if (records.length > 0 && records[0] && isFinite(records[0].meterAfter)) {
+      lastMeterAfter = records[0].meterAfter;
+      persistLastMeter(lastMeterAfter);
+    } else {
+      lastMeterAfter = null;
+      try { localStorage.removeItem(KEY_LAST_METER); } catch (e) { /* 忽略 */ }
+    }
+  }
+
+  /* ---------------- 读取输入 ---------------- */
+  function readInputs() {
+    return {
+      cap: settings.cap,
+      temp: num(el.temp.value),
+      s1: num(el.socStart.value),
+      s2: num(el.socEnd.value),
+      meterBefore: num(el.meterBefore.value),
+      meterAfter: num(el.meterAfter.value),
+      gun: num(el.gun.value),
+      startVal: chargeStart,
+      endVal: chargeEnd,
+      time: el.recordTime.value,
+    };
+  }
+
+  /* ---------------- 充电起止时长计算 ---------------- */
+  function computeDuration(startVal, endVal) {
+    if (!startVal || !endVal) {
+      return { valid: false, reason: "缺少开始或结束时间", totalMin: NaN, S: NaN, E: NaN };
+    }
+    const startDate = new Date(startVal);
+    const endDate = new Date(endVal);
+    if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+      return { valid: false, reason: "时间格式无效", totalMin: NaN, S: NaN, E: NaN };
+    }
+    const totalMin = (endDate.getTime() - startDate.getTime()) / 60000;
+    if (!(totalMin > 0)) {
+      return { valid: false, reason: "结束时间必须晚于开始时间", totalMin: NaN, S: NaN, E: NaN };
+    }
+    const base = new Date(startDate);
+    base.setHours(0, 0, 0, 0);
+    const S = (startDate.getTime() - base.getTime()) / 60000;
+    const E = S + totalMin;
+    return { valid: true, reason: "", totalMin, S, E };
+  }
+
+  /* ---------------- 校验 ---------------- */
+  function validate(d, dur) {
+    if (!(d.cap > 0)) return "电池标称容量必须大于 0，请到 ⚙ 设置 中检查";
+    if (!(d.s1 >= 0 && d.s1 <= 100) || !(d.s2 >= 0 && d.s2 <= 100))
+      return "电量百分比应在 0 ~ 100 之间";
+    if (!(d.s2 > d.s1)) return "充电后电量必须大于充电前电量";
+    if (!(d.gun > 0)) return "请输入充电枪显示电量";
+
+    const hasBefore = isFinite(d.meterBefore);
+    const hasAfter = isFinite(d.meterAfter);
+    if (hasBefore !== hasAfter) return "请同时填写充电前与充电后的电表读数";
+    if (hasBefore && hasAfter && !(d.meterAfter > d.meterBefore))
+      return "充电后电表读数必须大于充电前读数";
+
+    if (!dur.valid) return dur.reason;
+    return null;
+  }
+
+  /* ---------------- 核心计算 ---------------- */
+  function calc(d, dur) {
+    const delta = (d.s2 - d.s1) / 100;
+    const theoBattery = d.cap * delta;
+    const realCap = d.gun / delta;
+    const health = (realCap / d.cap) * 100;
+    const power = dur.totalMin > 0 ? d.gun / (dur.totalMin / 60) : NaN;
+    const remainKwh = (d.cap * d.s1) / 100;
+
+    let meterUsage = NaN;
+    if (isFinite(d.meterBefore) && isFinite(d.meterAfter) && d.meterAfter > d.meterBefore) {
+      meterUsage = d.meterAfter - d.meterBefore;
+    }
+
+    const lossRate =
+      isFinite(meterUsage) && meterUsage > 0
+        ? ((meterUsage - d.gun) / meterUsage) * 100
+        : NaN;
+
+    const segStart = timeToMin(settings.valleyStart);
+    const segEnd = timeToMin(settings.valleyEnd);
+    const valleyMin = circularOverlap(dur.S, dur.E, segStart, segEnd);
+    const peakMin = Math.max(0, dur.totalMin - valleyMin);
+
+    let valleyUsage = NaN;
+    let peakUsage = NaN;
+    let fee = NaN;
+
+    if (isFinite(meterUsage) && meterUsage > 0 && dur.totalMin > 0) {
+      valleyUsage = meterUsage * (valleyMin / dur.totalMin);
+      peakUsage = meterUsage - valleyUsage;
+      fee = valleyUsage * settings.valley + peakUsage * settings.peak;
+    }
+
+    return {
+      ...d,
+      delta,
+      theoBattery,
+      realCap,
+      health,
+      totalMin: dur.totalMin,
+      valleyMin,
+      peakMin,
+      power,
+      remainKwh,
+      meterUsage,
+      lossRate,
+      valleyUsage,
+      peakUsage,
+      fee,
+      dev: health - 100,
+    };
+  }
+
+  /* ---------------- 健康度评级 ---------------- */
+  function healthLevel(h) {
+    if (!isFinite(h)) {
+      return {
+        title: "等待录入数据",
+        desc: "输入充电前后电量与充电枪电量后，将自动估算电池健康度。",
+        color: "#cbd5e1",
+      };
+    }
+    if (h > 115) {
+      return {
+        title: "数据异常",
+        desc: "测算容量远高于标称值，请检查电量区间、枪端电量或设置中的标称容量。",
+        color: "#d97706",
+      };
+    }
+    if (h >= 95) {
+      return {
+        title: "电池状态优秀",
+        desc: "实测容量接近标称容量，电池衰减极小，状态非常好。",
+        color: "#16a34a",
+      };
+    }
+    if (h >= 90) {
+      return {
+        title: "电池状态良好",
+        desc: "存在轻微衰减，属于正常使用范围，无需担心。",
+        color: "#16a34a",
+      };
+    }
+    if (h >= 85) {
+      return {
+        title: "正常衰减范围",
+        desc: "容量略有下降。磷酸铁锂电池建议定期满充校准，并持续观察变化趋势。",
+        color: "#d97706",
+      };
+    }
+    if (h >= 80) {
+      return {
+        title: "衰减偏大",
+        desc: "容量下降较明显，建议到 4S 店做一次电池健康度检测。",
+        color: "#d97706",
+      };
+    }
+    return {
+      title: "电池可能异常",
+      desc: "实测容量明显低于标称值，建议尽快到 4S 店检测电池，或核对电表、枪端与电量区间数据。",
+      color: "#dc2626",
+    };
+  }
+
+  /* ---------------- 温度提示 ---------------- */
+  function tempTip(t) {
+    if (!isFinite(t)) return "";
+    if (t < 0) return "环境温度低于 0℃，电池活性低、充电损耗明显增大，本次数据仅供参考。";
+    if (t < 10) return "低温环境充电，电池活性下降，建议行驶预热后再充，读数会偏小。";
+    if (t > 40) return "环境温度偏高，注意通风散热，避免暴晒后立即充电。";
+    if (t > 35) return "温度较高，电池温控系统可能介入，充电功率会有所下降。";
+    return "";
+  }
+
+  /* ---------------- 渲染结果 ---------------- */
+  function render(r) {
+    const h = r ? r.health : NaN;
+    const lv = healthLevel(h);
+    const pct = isFinite(h) ? Math.max(0, Math.min(100, h)) : 0;
+
+    el.ring.style.setProperty("--p", pct);
+    el.ring.style.setProperty("--c", lv.color);
+
+    el.healthValue.textContent = isFinite(h) ? h.toFixed(1) : "--";
+    el.healthTitle.textContent = lv.title;
+    el.healthTitle.style.color = isFinite(h) ? lv.color : "#16202e";
+    el.healthDesc.textContent = lv.desc;
+
+    el.rTheo.textContent = r ? fmt(r.theoBattery) : "--";
+    el.rRealCap.textContent = r ? fmt(r.realCap) : "--";
+    el.rMeter.textContent = r && isFinite(r.meterUsage) ? fmt(r.meterUsage) : "--";
+    el.rGun.textContent = r ? fmt(r.gun) : "--";
+    el.rLoss.textContent = r && isFinite(r.lossRate) ? r.lossRate.toFixed(1) : "--";
+    el.rPower.textContent = r ? fmt(r.power) : "--";
+    el.rRemain.textContent = r ? fmt(r.remainKwh) : "--";
+    el.rDev.textContent =
+      r && isFinite(r.dev) ? (r.dev > 0 ? "+" : "") + r.dev.toFixed(1) : "--";
+
+    el.rFee.textContent = r && isFinite(r.fee) ? r.fee.toFixed(2) : "--";
+    el.rValleyUsage.textContent =
+      r && isFinite(r.valleyUsage) ? r.valleyUsage.toFixed(2) : "--";
+    el.rPeakUsage.textContent =
+      r && isFinite(r.peakUsage) ? r.peakUsage.toFixed(2) : "--";
+    el.rValleyPrice.textContent = settings.valley.toFixed(2);
+    el.rPeakPrice.textContent = settings.peak.toFixed(2);
+    el.rValleyPct.textContent =
+      r && r.totalMin > 0 ? ((r.valleyMin / r.totalMin) * 100).toFixed(1) + "%" : "--";
+  }
+
+  /* ---------------- 主更新流程 ---------------- */
+  function update() {
+    const d = readInputs();
+    const dur = computeDuration(d.startVal, d.endVal);
+
+    if (!(d.gun > 0)) {
+      current = null;
+      render(null);
+      setMsg("");
+      return null;
+    }
+
+    const err = validate(d, dur);
+    if (err) {
+      current = null;
+      render(null);
+      setMsg(err, "warn");
+      return null;
+    }
+
+    const r = calc(d, dur);
+    current = r;
+    render(r);
+
+    const warns = [];
+    const infos = [];
+
+    if (isFinite(r.meterUsage) && r.gun > r.meterUsage) {
+      warns.push("充电枪电量大于电表用电量，请核对两个读数是否记录正确。");
+    }
+    if (r.health > 115) {
+      warns.push("健康度超过 115%，数据可能有误，请检查电量区间与电量读数。");
+    }
+    if (r.delta < 0.4) {
+      infos.push("本次充电区间不足 40%，测算误差会偏大，建议在低电量时充至满电再记录。");
+    }
+    if (r.totalMin > 0 && r.power > 3.6) {
+      infos.push("平均功率超过 3.6kW，秦PLUS DM-i 55km 版家充最大约 3.3kW，请核对时长或电量。");
+    }
+    if (!isFinite(r.meterUsage)) {
+      infos.push("未填写电表读数，电表用电量与电费暂无法计算。");
+    }
+    const t = tempTip(d.temp);
+    if (t) infos.push(t);
+
+    if (warns.length) setMsg(warns.join(" "), "warn");
+    else if (infos.length) setMsg(infos.join(" "), "info");
+    else if (!editingId) setMsg("", "");
+
+    return r;
+  }
+
+  /* ---------------- 历史电费重算 ---------------- */
+  function recalcRecordFee(rec) {
+    const snapshot = {
+      peakPrice: settings.peak,
+      valleyPrice: settings.valley,
+      valleyStart: settings.valleyStart,
+      valleyEnd: settings.valleyEnd,
+    };
+
+    const meterUsage = rec.meterUsage;
+    if (!isFinite(meterUsage) || meterUsage <= 0) {
+      return { ...rec, valleyUsage: NaN, peakUsage: NaN, fee: NaN, ...snapshot };
+    }
+
+    let totalMin = rec.totalMin;
+    let valleyMin = rec.valleyMin;
+
+    if (rec.startVal && rec.endVal) {
+      const dur = computeDuration(rec.startVal, rec.endVal);
+      if (dur.valid) {
+        totalMin = dur.totalMin;
+        const segStart = timeToMin(settings.valleyStart);
+        const segEnd = timeToMin(settings.valleyEnd);
+        valleyMin = circularOverlap(dur.S, dur.E, segStart, segEnd);
+      }
+    }
+
+    if (!isFinite(totalMin) || !(totalMin > 0)) {
+      return { ...rec, valleyUsage: NaN, peakUsage: NaN, fee: NaN, ...snapshot };
+    }
+    if (!isFinite(valleyMin)) valleyMin = 0;
+
+    const valleyUsage = meterUsage * (valleyMin / totalMin);
+    const peakUsage = meterUsage - valleyUsage;
+    const fee = valleyUsage * settings.valley + peakUsage * settings.peak;
+
+    return {
+      ...rec,
+      totalMin,
+      valleyMin,
+      valleyUsage,
+      peakUsage,
+      fee,
+      ...snapshot,
+    };
+  }
+
+  function recalcAllRecordFees() {
+    if (records.length === 0) return 0;
+    records = records.map(recalcRecordFee);
+    persistRecords();
+    renderHistory();
+    return records.length;
+  }
+
+  /* ---------------- 历史记录渲染 ---------------- */
+  function healthTag(h) {
+    const cls = h >= 90 ? "g" : h >= 80 ? "y" : "r";
+    return `<span class="tag ${cls}">${h.toFixed(1)}%</span>`;
+  }
+
+  function feeTitle(rec) {
+    if (!isFinite(rec.peakPrice) || !isFinite(rec.valleyPrice)) return "";
+    const vs = rec.valleyStart && rec.valleyEnd ? `（谷时段 ${rec.valleyStart} - ${rec.valleyEnd}）` : "";
+    return `保存时电价：峰 ¥${rec.peakPrice.toFixed(2)} / 谷 ¥${rec.valleyPrice.toFixed(2)}${vs}`;
+  }
+
+  function renderHistoryTable() {
+    el.historyBody.innerHTML = "";
+    records.forEach((rec) => {
+      const tr = document.createElement("tr");
+      const tip = feeTitle(rec);
+      tr.innerHTML = `
+        <td>${formatDateTime(rec.time)}</td>
+        <td>${rec.s1}% → ${rec.s2}%</td>
+        <td>${isFinite(rec.meterBefore) ? rec.meterBefore.toFixed(2) : "--"} → ${isFinite(rec.meterAfter) ? rec.meterAfter.toFixed(2) : "--"}</td>
+        <td>${isFinite(rec.meterUsage) ? rec.meterUsage.toFixed(2) + " kWh" : "--"}</td>
+        <td>${rec.gun.toFixed(2)} kWh</td>
+        <td>${rec.startVal && rec.endVal ? formatShort(rec.startVal) + " → " + formatShort(rec.endVal) : "--"}</td>
+        <td>${isFinite(rec.totalMin) ? durationTextFromMin(rec.totalMin) : "--"}</td>
+        <td>${isFinite(rec.temp) ? rec.temp.toFixed(1) + " ℃" : "--"}</td>
+        <td>${healthTag(rec.health)}</td>
+        <td class="fee-cell" title="${tip}">${isFinite(rec.fee) ? "¥" + rec.fee.toFixed(2) : "--"}</td>
+        <td><div class="op-cell">
+          <button class="edit" data-id="${rec.id}" title="编辑">✎</button>
+          <button class="del" data-id="${rec.id}" title="删除">✕</button>
+        </div></td>
+      `;
+      el.historyBody.appendChild(tr);
+    });
+  }
+
+  function renderHistoryCards() {
+    if (records.length === 0) {
+      el.cardsView.innerHTML = "";
+      return;
+    }
+
+    el.cardsView.innerHTML = records.map((rec) => {
+      const cls = rec.health >= 90 ? "g" : rec.health >= 80 ? "y" : "r";
+      const meterReadings =
+        (isFinite(rec.meterBefore) ? rec.meterBefore.toFixed(2) : "--") +
+        " → " +
+        (isFinite(rec.meterAfter) ? rec.meterAfter.toFixed(2) : "--");
+      const timeRange =
+        rec.startVal && rec.endVal
+          ? formatShort(rec.startVal) + " → " + formatShort(rec.endVal)
+          : "--";
+      const durTemp =
+        (isFinite(rec.totalMin) ? durationTextFromMin(rec.totalMin) : "--") +
+        " / " +
+        (isFinite(rec.temp) ? rec.temp.toFixed(1) + "℃" : "--");
+      const meterUsageStr =
+        isFinite(rec.meterUsage) ? rec.meterUsage.toFixed(2) + " kWh" : "--";
+      const gunStr = rec.gun.toFixed(2) + " kWh";
+      const feeStr = isFinite(rec.fee) ? "¥" + rec.fee.toFixed(2) : "--";
+
+      return `
+        <div class="hist-card" data-id="${rec.id}">
+          <div class="hc-head">
+            <span class="hc-time">${formatDateTime(rec.time)}</span>
+            <span class="tag ${cls}">${rec.health.toFixed(1)}%</span>
+          </div>
+          <div class="hc-rows">
+            <div class="hc-row"><span class="hc-k">电量区间</span><span class="hc-v">${rec.s1}% → ${rec.s2}%</span></div>
+            <div class="hc-row"><span class="hc-k">电表读数</span><span class="hc-v">${meterReadings}</span></div>
+            <div class="hc-row"><span class="hc-k">电表用电</span><span class="hc-v">${meterUsageStr}</span></div>
+            <div class="hc-row"><span class="hc-k">枪端电量</span><span class="hc-v">${gunStr}</span></div>
+            <div class="hc-row"><span class="hc-k">充电时段</span><span class="hc-v">${timeRange}</span></div>
+            <div class="hc-row"><span class="hc-k">时长 / 温度</span><span class="hc-v">${durTemp}</span></div>
+          </div>
+          <div class="hc-foot">
+            <span class="hc-fee">${feeStr}</span>
+            <div class="hc-ops">
+              <button class="edit" data-id="${rec.id}">编辑</button>
+              <button class="del" data-id="${rec.id}">删除</button>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join("");
+  }
+
+  function updateHistorySummary() {
+    if (records.length === 0) {
+      el.emptyTip.style.display = "block";
+      el.cntRecords.textContent = "0";
+      el.avgHealth.textContent = "--";
+      el.sumFee.textContent = "¥0.00";
+    } else {
+      el.emptyTip.style.display = "none";
+      el.cntRecords.textContent = String(records.length);
+      const avg = records.reduce((s, r) => s + r.health, 0) / records.length;
+      el.avgHealth.textContent = avg.toFixed(1) + "%";
+      const total = records.reduce((s, r) => s + (isFinite(r.fee) ? r.fee : 0), 0);
+      el.sumFee.textContent = "¥" + total.toFixed(2);
+    }
+    persistRecords();
+  }
+
+  function renderHistory() {
+    renderHistoryTable();
+    renderHistoryCards();
+    updateHistorySummary();
+  }
+
+  /* ---------------- 进入 / 退出编辑 ---------------- */
+  function enterEditMode(rec) {
+    editingId = rec.id;
+
+    el.temp.value = isFinite(rec.temp) ? rec.temp : "";
+    el.socStart.value = rec.s1;
+    el.socEnd.value = rec.s2;
+    el.meterBefore.value = isFinite(rec.meterBefore) ? rec.meterBefore.toFixed(2) : "";
+    el.meterAfter.value = isFinite(rec.meterAfter) ? rec.meterAfter.toFixed(2) : "";
+    el.gun.value = rec.gun;
+    el.recordTime.value = rec.time || "";
+
+    chargeStart = rec.startVal || "";
+    chargeEnd = rec.endVal || "";
+
+    if (isFinite(rec.totalMin) && rec.totalMin > 0) {
+      setDurationInputs(rec.totalMin);
+    } else {
+      el.hours.value = "0";
+      el.minutes.value = "0";
+    }
+
+    updateTimerLabels();
+    updateEditUI();
+    update();
+
+    let tip = "✎ 正在编辑历史记录，修改后点击「更新记录」保存。";
+    if (isFinite(rec.peakPrice) && isFinite(rec.valleyPrice)) {
+      const vs = rec.valleyStart && rec.valleyEnd ? `，谷时段 ${rec.valleyStart} - ${rec.valleyEnd}` : "";
+      tip = `✎ 正在编辑。该记录保存时电价：峰 ¥${rec.peakPrice.toFixed(2)} / 谷 ¥${rec.valleyPrice.toFixed(2)}${vs}。`;
+    }
+    setMsg(tip, "info");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  /* ---------------- 保存 / 更新记录 ---------------- */
+  function buildRecordData(r) {
+    return {
+      time: el.recordTime.value || chargeEnd || nowLocalInput(),
+      s1: r.s1,
+      s2: r.s2,
+      meterBefore: r.meterBefore,
+      meterAfter: r.meterAfter,
+      meterUsage: r.meterUsage,
+      gun: r.gun,
+      startVal: r.startVal,
+      endVal: r.endVal,
+      totalMin: r.totalMin,
+      valleyMin: r.valleyMin,
+      temp: r.temp,
+      realCap: r.realCap,
+      health: r.health,
+      valleyUsage: r.valleyUsage,
+      peakUsage: r.peakUsage,
+      fee: r.fee,
+      peakPrice: settings.peak,
+      valleyPrice: settings.valley,
+      valleyStart: settings.valleyStart,
+      valleyEnd: settings.valleyEnd,
+    };
+  }
+
+  function saveRecord() {
+    const r = update();
+    if (!r) {
+      if (!current) setMsg("请先填写完整、有效的充电数据后再保存。", "warn");
+      return;
+    }
+
+    const data = buildRecordData(r);
+    const isUpdate = !!editingId;
+
+    if (isUpdate) {
+      const idx = records.findIndex((x) => String(x.id) === String(editingId));
+      if (idx >= 0) {
+        records[idx] = { ...records[idx], ...data };
+      } else {
+        records.unshift({ id: Date.now() + Math.random().toString(16).slice(2), ...data });
+      }
+      editingId = null;
+      updateEditUI();
+    } else {
+      records.unshift({ id: Date.now() + Math.random().toString(16).slice(2), ...data });
+    }
+
+    syncLastMeterFromLatest();
+    renderHistory();
+    resetFormForNew();
+
+    let tip;
+    if (isUpdate) {
+      tip = "✓ 记录已更新，表单已自动重置。";
+    } else if (lastMeterAfter !== null) {
+      tip = `✓ 记录已保存，表单已自动重置。下次「充电前电表读数」将带入 ${lastMeterAfter.toFixed(2)} kWh。`;
+    } else {
+      tip = "✓ 记录已保存，表单已自动重置。";
+    }
+    setMsg(tip, "info");
+    setTimeout(() => {
+      if (el.msg.textContent.startsWith("✓")) setMsg("");
+    }, 3400);
+  }
+
+  /* ---------------- 计时按钮 ---------------- */
+  function onStartClick() {
+    const nowStr = nowLocalInput();
+
+    if (chargeEnd) {
+      const s = new Date(nowStr);
+      const e = new Date(chargeEnd);
+      if (!isNaN(s.getTime()) && !isNaN(e.getTime()) && e <= s) {
+        chargeEnd = "";
+      }
+    }
+
+    chargeStart = nowStr;
+    el.hours.value = "0";
+    el.minutes.value = "0";
+
+    if (chargeEnd) {
+      const dur = computeDuration(chargeStart, chargeEnd);
+      if (dur.valid) setDurationInputs(dur.totalMin);
+      else chargeEnd = "";
+    }
+
+    if (!el.recordTime.value) {
+      el.recordTime.value = chargeStart;
+    }
+
+    updateTimerLabels();
+    update();
+  }
+
+  function onEndClick() {
+    const now = new Date();
+
+    if (!chargeStart) {
+      const total = getDurationMinFromInputs();
+      if (total > 0) {
+        chargeStart = toLocalInput(new Date(now.getTime() - total * 60000));
+      } else {
+        setMsg("请先点击「开始充电」，或在 ⚙ 设置 中填写开始时间。", "warn");
+        return;
+      }
+    }
+
+    const s = new Date(chargeStart);
+    if (isNaN(s.getTime())) {
+      setMsg("充电开始时间格式无效，请在 ⚙ 设置 中重新填写。", "warn");
+      return;
+    }
+    if (s.getTime() >= now.getTime()) {
+      setMsg("充电结束时间必须晚于开始时间，请检查开始时间。", "warn");
+      return;
+    }
+
+    chargeEnd = toLocalInput(now);
+    const totalMin = (now.getTime() - s.getTime()) / 60000;
+    setDurationInputs(totalMin);
+    el.recordTime.value = chargeEnd;
+
+    updateTimerLabels();
+    update();
+  }
+
+  function onManualDuration() {
+    let h = num(el.hours.value);
+    let m = num(el.minutes.value);
+    if (!isFinite(h) || h < 0) h = 0;
+    if (!isFinite(m) || m < 0) m = 0;
+    if (m > 59) { m = 59; el.minutes.value = "59"; }
+    if (h !== Math.floor(h)) { h = Math.floor(h); el.hours.value = String(h); }
+
+    const totalMin = h * 60 + m;
+
+    if (chargeStart && totalMin > 0) {
+      const s = new Date(chargeStart);
+      if (!isNaN(s.getTime())) {
+        chargeEnd = toLocalInput(new Date(s.getTime() + totalMin * 60000));
+        el.recordTime.value = chargeEnd;
+      }
+    }
+
+    updateTimerLabels();
+    update();
+  }
+
+  /* ---------------- 导出功能 ---------------- */
+  function timestampForFile() {
+    const d = new Date();
+    return `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}`;
+  }
+
+  function downloadBlob(blob, filename) {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 1500);
+  }
+
+  function csvEscape(value) {
+    const s = value === null || value === undefined ? "" : String(value);
+    if (s.includes(",") || s.includes('"') || s.includes("\n") || s.includes("\r")) {
+      return '"' + s.replace(/"/g, '""') + '"';
+    }
+    return s;
+  }
+
+  function buildExportHeaders() {
+    return [
+      "记录时间", "电量区间", "充电前电表读数", "充电后电表读数", "电表用电(kWh)",
+      "充电枪电量(kWh)", "充电开始", "充电结束", "充电时长(分钟)", "环境温度(℃)",
+      "估算实际容量(kWh)", "健康度(%)", "谷段用电(kWh)", "峰段用电(kWh)", "电费(元)",
+      "峰时电价(元/kWh)", "谷时电价(元/kWh)", "谷时段"
+    ];
+  }
+
+  function buildExportRow(rec) {
+    return [
+      formatDateTime(rec.time),
+      `${rec.s1}% → ${rec.s2}%`,
+      isFinite(rec.meterBefore) ? rec.meterBefore.toFixed(2) : "",
+      isFinite(rec.meterAfter) ? rec.meterAfter.toFixed(2) : "",
+      isFinite(rec.meterUsage) ? rec.meterUsage.toFixed(2) : "",
+      rec.gun.toFixed(2),
+      rec.startVal ? formatDateTime(rec.startVal) : "",
+      rec.endVal ? formatDateTime(rec.endVal) : "",
+      isFinite(rec.totalMin) ? Math.round(rec.totalMin) : "",
+      isFinite(rec.temp) ? rec.temp.toFixed(1) : "",
+      rec.realCap.toFixed(2),
+      rec.health.toFixed(1),
+      isFinite(rec.valleyUsage) ? rec.valleyUsage.toFixed(2) : "",
+      isFinite(rec.peakUsage) ? rec.peakUsage.toFixed(2) : "",
+      isFinite(rec.fee) ? rec.fee.toFixed(2) : "",
+      isFinite(rec.peakPrice) ? rec.peakPrice.toFixed(2) : "",
+      isFinite(rec.valleyPrice) ? rec.valleyPrice.toFixed(2) : "",
+      rec.valleyStart && rec.valleyEnd ? `${rec.valleyStart}-${rec.valleyEnd}` : ""
+    ];
+  }
+
+  function exportCSV() {
+    if (records.length === 0) {
+      setMsg("暂无记录可导出。", "warn");
+      return;
+    }
+
+    const rows = records.map(buildExportRow);
+    const csv = [buildExportHeaders(), ...rows]
+      .map((row) => row.map(csvEscape).join(","))
+      .join("\r\n");
+
+    const blob = new Blob(["\ufeff" + csv], { type: "text/csv;charset=utf-8;" });
+    downloadBlob(blob, `充电记录_${timestampForFile()}.csv`);
+
+    setMsg(`✓ 已导出 ${records.length} 条记录为 CSV，可用 Excel 打开。`, "info");
+    setTimeout(() => {
+      if (el.msg.textContent.startsWith("✓")) setMsg("");
+    }, 3200);
+  }
+
+  function exportXLS() {
+    if (records.length === 0) {
+      setMsg("暂无记录可导出。", "warn");
+      return;
+    }
+
+    const headers = buildExportHeaders();
+    const rows = records.map(buildExportRow);
+
+    const totalKwh = records.reduce((s, r) => s + (isFinite(r.meterUsage) ? r.meterUsage : 0), 0);
+    const totalFee = records.reduce((s, r) => s + (isFinite(r.fee) ? r.fee : 0), 0);
+    const avgHealth = records.reduce((s, r) => s + r.health, 0) / records.length;
+
+    const thCells = headers.map((h) => `<th>${escapeHtml(h)}</th>`).join("");
+    const bodyRows = rows.map((row) =>
+      "<tr>" + row.map((c) => `<td style="mso-number-format:'\\@';">${escapeHtml(c)}</td>`).join("") + "</tr>"
+    ).join("");
+
+    const summaryRow = `
+      <tr>
+        <td colspan="4" style="font-weight:bold;background:#fff8f0;">汇总</td>
+        <td style="font-weight:bold;background:#fff8f0;mso-number-format:'0.00';">${totalKwh.toFixed(2)}</td>
+        <td colspan="4" style="background:#fff8f0;"></td>
+        <td style="background:#fff8f0;"></td>
+        <td style="background:#fff8f0;"></td>
+        <td style="font-weight:bold;background:#fff8f0;mso-number-format:'0.0';">${avgHealth.toFixed(1)}</td>
+        <td colspan="2" style="background:#fff8f0;"></td>
+        <td style="font-weight:bold;background:#fff8f0;mso-number-format:'0.00';">${totalFee.toFixed(2)}</td>
+        <td colspan="3" style="background:#fff8f0;"></td>
+      </tr>
+    `;
+
+    const html =
+      '<html xmlns:o="urn:schemas-microsoft-com:office:office" ' +
+      'xmlns:x="urn:schemas-microsoft-com:office:excel" ' +
+      'xmlns="http://www.w3.org/TR/REC-html40">' +
+      '<head><meta charset="UTF-8">' +
+      '<!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet>' +
+      '<x:Name>充电记录</x:Name><x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions>' +
+      '</x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]-->' +
+      '<style>' +
+      'td,th{border:1px solid #d6dfeb;padding:5px 8px;font-family:"Microsoft YaHei",sans-serif;font-size:11pt;vertical-align:middle;}' +
+      'th{background:#f1f5fb;font-weight:bold;color:#334155;}' +
+      'table{border-collapse:collapse;}' +
+      '</style></head><body>' +
+      '<table>' +
+      '<thead><tr>' + thCells + '</tr></thead>' +
+      '<tbody>' + bodyRows + summaryRow + '</tbody>' +
+      '</table></body></html>';
+
+    const blob = new Blob(["\ufeff" + html], { type: "application/vnd.ms-excel;charset=utf-8;" });
+    downloadBlob(blob, `充电记录_${timestampForFile()}.xls`);
+
+    setMsg(`✓ 已导出 ${records.length} 条记录为 Excel 表格，包含汇总行。`, "info");
+    setTimeout(() => {
+      if (el.msg.textContent.startsWith("✓")) setMsg("");
+    }, 3200);
+  }
+
+  function exportJSON() {
+    if (records.length === 0) {
+      setMsg("暂无记录可导出。", "warn");
+      return;
+    }
+
+    const data = {
+      app: "秦PLUS DM-i 55km 家充电池记录",
+      version: 7,
+      exportedAt: new Date().toISOString(),
+      settings: { ...settings },
+      records: records,
+    };
+
+    const blob = new Blob(
+      [JSON.stringify(data, null, 2)],
+      { type: "application/json;charset=utf-8;" }
+    );
+    downloadBlob(blob, `充电记录备份_${timestampForFile()}.json`);
+
+    setMsg(`✓ 已导出 ${records.length} 条记录及设置到 JSON 备份文件。`, "info");
+    setTimeout(() => {
+      if (el.msg.textContent.startsWith("✓")) setMsg("");
+    }, 3200);
+  }
+
+  /* ---------------- 导入功能 ---------------- */
+  function normalizeRecord(rec, idx) {
+    if (!rec || typeof rec !== "object") return null;
+
+    const n = {
+      id: rec.id || (Date.now() + Math.random().toString(16).slice(2) + idx),
+      time: rec.time || nowLocalInput(),
+      s1: isFinite(rec.s1) ? Number(rec.s1) : 25,
+      s2: isFinite(rec.s2) ? Number(rec.s2) : 100,
+      gun: isFinite(rec.gun) ? Number(rec.gun) : 0,
+      meterBefore: isFinite(rec.meterBefore) ? Number(rec.meterBefore) : NaN,
+      meterAfter: isFinite(rec.meterAfter) ? Number(rec.meterAfter) : NaN,
+      meterUsage: isFinite(rec.meterUsage) ? Number(rec.meterUsage) : NaN,
+      temp: isFinite(rec.temp) ? Number(rec.temp) : NaN,
+      startVal: rec.startVal || "",
+      endVal: rec.endVal || "",
+      totalMin: isFinite(rec.totalMin) ? Number(rec.totalMin) : NaN,
+      valleyMin: isFinite(rec.valleyMin) ? Number(rec.valleyMin) : NaN,
+      realCap: isFinite(rec.realCap) ? Number(rec.realCap) : NaN,
+      health: isFinite(rec.health) ? Number(rec.health) : NaN,
+      valleyUsage: isFinite(rec.valleyUsage) ? Number(rec.valleyUsage) : NaN,
+      peakUsage: isFinite(rec.peakUsage) ? Number(rec.peakUsage) : NaN,
+      fee: isFinite(rec.fee) ? Number(rec.fee) : NaN,
+      peakPrice: isFinite(rec.peakPrice) ? Number(rec.peakPrice) : NaN,
+      valleyPrice: isFinite(rec.valleyPrice) ? Number(rec.valleyPrice) : NaN,
+      valleyStart: rec.valleyStart || "",
+      valleyEnd: rec.valleyEnd || "",
+    };
+
+    // 关键数据无效则丢弃
+    if (!(n.gun > 0) || !(n.s2 > n.s1)) return null;
+
+    // 补算缺失的容量与健康度
+    if (!isFinite(n.realCap) || !isFinite(n.health)) {
+      const delta = (n.s2 - n.s1) / 100;
+      n.realCap = n.gun / delta;
+      n.health = (n.realCap / settings.cap) * 100;
+    }
+
+    // 补算缺失的电表用电量
+    if (!isFinite(n.meterUsage) && isFinite(n.meterBefore) && isFinite(n.meterAfter)) {
+      n.meterUsage = n.meterAfter - n.meterBefore;
+    }
+
+    // 如果记录没有电费，尝试按当前设置补算
+    if (!isFinite(n.fee) && isFinite(n.meterUsage) && n.meterUsage > 0) {
+      let totalMin = n.totalMin;
+      let valleyMin = n.valleyMin;
+      if (n.startVal && n.endVal) {
+        const dur = computeDuration(n.startVal, n.endVal);
+        if (dur.valid) {
+          totalMin = dur.totalMin;
+          const segStart = timeToMin(settings.valleyStart);
+          const segEnd = timeToMin(settings.valleyEnd);
+          valleyMin = circularOverlap(dur.S, dur.E, segStart, segEnd);
+        }
+      }
+      if (isFinite(totalMin) && totalMin > 0) {
+        if (!isFinite(valleyMin)) valleyMin = 0;
+        const vu = n.meterUsage * (valleyMin / totalMin);
+        const pu = n.meterUsage - vu;
+        n.valleyUsage = vu;
+        n.peakUsage = pu;
+        n.fee = vu * settings.valley + pu * settings.peak;
+        n.valleyMin = valleyMin;
+        n.totalMin = totalMin;
+      }
+    }
+
+    return n;
+  }
+
+  function applyImportedSettings(s) {
+    if (!s || typeof s !== "object") return;
+    if (isFinite(s.cap) && s.cap > 0) settings.cap = Number(s.cap);
+    if (isFinite(s.peak) && s.peak >= 0) settings.peak = Number(s.peak);
+    if (isFinite(s.valley) && s.valley >= 0) settings.valley = Number(s.valley);
+    if (typeof s.valleyStart === "string" && /^\d{1,2}:\d{2}$/.test(s.valleyStart)) {
+      settings.valleyStart = s.valleyStart;
+    }
+    if (typeof s.valleyEnd === "string" && /^\d{1,2}:\d{2}$/.test(s.valleyEnd)) {
+      settings.valleyEnd = s.valleyEnd;
+    }
+    if (typeof s.lockHistory === "boolean") settings.lockHistory = s.lockHistory;
+    persistSettings();
+  }
+
+  function importBackup(file) {
+    if (!file) return;
+
+    if (!/\.json$/i.test(file.name) && file.type !== "application/json") {
+      setMsg("导入失败：请选择 JSON 格式的备份文件。", "warn");
+      el.importInput.value = "";
+      return;
+    }
+
+    const reader = new FileReader();
+
+    reader.onload = (e) => {
+      let data;
+      try {
+        data = JSON.parse(String(e.target.result));
+      } catch (err) {
+        setMsg("导入失败：文件不是有效的 JSON 格式。", "warn");
+        el.importInput.value = "";
+        return;
+      }
+
+      let importedRecords = null;
+      let importedSettings = null;
+
+      if (Array.isArray(data)) {
+        importedRecords = data;
+      } else if (data && typeof data === "object") {
+        if (Array.isArray(data.records)) importedRecords = data.records;
+        if (data.settings && typeof data.settings === "object") importedSettings = data.settings;
+      }
+
+      if (!importedRecords) {
+        setMsg("导入失败：未在文件中找到记录数据。", "warn");
+        el.importInput.value = "";
+        return;
+      }
+
+      // 如果带有设置，先应用设置（便于补算缺失字段时使用）
+      if (importedSettings) applyImportedSettings(importedSettings);
+
+      const normalized = importedRecords
+        .map((rec, i) => normalizeRecord(rec, i))
+        .filter(Boolean);
+
+      if (normalized.length === 0) {
+        setMsg("导入失败：文件中没有有效的充电记录。", "warn");
+        el.importInput.value = "";
+        return;
+      }
+
+      const useMerge = confirm(
+        `文件包含 ${normalized.length} 条有效记录。\n\n` +
+        `点击「确定」：合并到现有记录（按 id 去重，不会覆盖已有记录）\n` +
+        `点击「取消」：覆盖现有全部记录（原有记录将被清空）`
+      );
+
+      let tip;
+      if (useMerge) {
+        const existingIds = new Set(records.map((r) => String(r.id)));
+        let added = 0;
+        normalized.forEach((rec) => {
+          if (!existingIds.has(String(rec.id))) {
+            records.push(rec);
+            existingIds.add(String(rec.id));
+            added++;
+          }
+        });
+        records.sort((a, b) => {
+          const ta = new Date(a.time).getTime();
+          const tb = new Date(b.time).getTime();
+          return (isNaN(tb) ? 0 : tb) - (isNaN(ta) ? 0 : ta);
+        });
+        tip = `✓ 已合并导入 ${added} 条新记录（文件共 ${normalized.length} 条）。`;
+      } else {
+        records = normalized.slice();
+        records.sort((a, b) => {
+          const ta = new Date(a.time).getTime();
+          const tb = new Date(b.time).getTime();
+          return (isNaN(tb) ? 0 : tb) - (isNaN(ta) ? 0 : ta);
+        });
+        tip = `✓ 已导入 ${records.length} 条记录，原有记录已被覆盖。`;
+      }
+
+      editingId = null;
+      updateEditUI();
+      resetFormForNew();
+      syncLastMeterFromLatest();
+      renderHistory();
+      update();
+      render(null);
+
+      setMsg(tip, "success");
+      setTimeout(() => {
+        if (el.msg.textContent.startsWith("✓")) setMsg("");
+      }, 4000);
+
+      el.importInput.value = "";
+    };
+
+    reader.onerror = () => {
+      setMsg("导入失败：无法读取所选文件。", "warn");
+      el.importInput.value = "";
+    };
+
+    reader.readAsText(file, "UTF-8");
+  }
+
+  /* ---------------- 设置弹窗 ---------------- */
+  function openSettings() {
+    el.setCap.value = settings.cap;
+    el.setPeak.value = settings.peak;
+    el.setValley.value = settings.valley;
+    el.setValleyStart.value = settings.valleyStart;
+    el.setValleyEnd.value = settings.valleyEnd;
+    el.setLockHistory.checked = !!settings.lockHistory;
+    el.setStartTime.value = chargeStart;
+    el.setEndTime.value = chargeEnd;
+    el.settingsErr.className = "modal-err";
+    el.settingsErr.textContent = "";
+    el.modal.classList.add("show");
+    setTimeout(() => el.setCap.focus(), 60);
+  }
+
+  function closeSettings() {
+    el.modal.classList.remove("show");
+  }
+
+  function saveSettings() {
+    const cap = num(el.setCap.value);
+    const peak = num(el.setPeak.value);
+    const valley = num(el.setValley.value);
+    const vStart = el.setValleyStart.value;
+    const vEnd = el.setValleyEnd.value;
+    const sTime = el.setStartTime.value;
+    const eTime = el.setEndTime.value;
+    const newLock = el.setLockHistory.checked;
+
+    let err = "";
+    if (!(cap > 0)) err = "电池标称容量必须大于 0";
+    else if (!(peak >= 0)) err = "峰时电价不能为负数";
+    else if (!(valley >= 0)) err = "谷时电价不能为负数";
+    else if (!vStart || !vEnd) err = "请填写谷时段开始与结束时间";
+    else if (vStart === vEnd) err = "谷时段开始与结束时间不能相同";
+
+    if (!err && eTime && !sTime) err = "填写结束时间时，请同时填写开始时间";
+    if (!err && sTime && eTime) {
+      const sd = new Date(sTime);
+      const ed = new Date(eTime);
+      if (isNaN(sd.getTime()) || isNaN(ed.getTime())) err = "充电时间格式无效";
+      else if (ed.getTime() <= sd.getTime()) err = "结束时间必须晚于开始时间";
+    }
+
+    if (err) {
+      el.settingsErr.className = "modal-err show";
+      el.settingsErr.textContent = err;
+      return;
+    }
+
+    const oldPeak = settings.peak;
+    const oldValley = settings.valley;
+    const oldVS = settings.valleyStart;
+    const oldVE = settings.valleyEnd;
+    const wasLocked = settings.lockHistory;
+
+    settings.cap = cap;
+    settings.peak = peak;
+    settings.valley = valley;
+    settings.valleyStart = vStart;
+    settings.valleyEnd = vEnd;
+    settings.lockHistory = newLock;
+    persistSettings();
+
+    const priceChanged =
+      peak !== oldPeak || valley !== oldValley ||
+      vStart !== oldVS || vEnd !== oldVE;
+
+    let recalcCount = 0;
+    if (!settings.lockHistory && (priceChanged || wasLocked)) {
+      recalcCount = recalcAllRecordFees();
+    }
+
+    chargeStart = sTime || "";
+    chargeEnd = eTime || "";
+
+    if (chargeStart && chargeEnd) {
+      const mins = (new Date(chargeEnd).getTime() - new Date(chargeStart).getTime()) / 60000;
+      setDurationInputs(mins);
+    } else if (!chargeStart && !chargeEnd) {
+      setDurationInputs(0);
+    } else if (chargeStart && !chargeEnd) {
+      const total = getDurationMinFromInputs();
+      if (total > 0) {
+        chargeEnd = toLocalInput(new Date(new Date(chargeStart).getTime() + total * 60000));
+      }
+    }
+
+    updateTimerLabels();
+    closeSettings();
+    update();
+
+    let tip = "✓ 设置已保存并生效。";
+    if (recalcCount > 0) {
+      tip = `✓ 设置已保存，已按新电价重算 ${recalcCount} 条历史记录。`;
+    }
+    setMsg(tip, "info");
+    setTimeout(() => {
+      if (el.msg.textContent.startsWith("✓")) setMsg("");
+    }, 3000);
+  }
+
+  /* ---------------- 事件绑定 ---------------- */
+  [el.temp, el.socStart, el.socEnd, el.meterBefore, el.meterAfter, el.gun, el.recordTime].forEach((input) => {
+    input.addEventListener("input", update);
+    input.addEventListener("change", update);
+  });
+
+  el.startBtn.addEventListener("click", onStartClick);
+  el.endBtn.addEventListener("click", onEndClick);
+
+  el.hours.addEventListener("change", onManualDuration);
+  el.minutes.addEventListener("change", onManualDuration);
+
+  el.saveBtn.addEventListener("click", saveRecord);
+
+  function handleResetOrCancel() {
+    if (editingId) {
+      editingId = null;
+      updateEditUI();
+      resetFormForNew();
+      setMsg("已取消编辑。", "info");
+      setTimeout(() => {
+        if (el.msg.textContent === "已取消编辑。") setMsg("");
+      }, 2000);
+      return;
+    }
+    resetFormForNew();
+    setMsg("");
+  }
+
+  el.resetBtn.addEventListener("click", handleResetOrCancel);
+  el.cancelEditBtn.addEventListener("click", handleResetOrCancel);
+
+  el.clearBtn.addEventListener("click", () => {
+    if (records.length === 0) return;
+    if (confirm("确定要清空全部历史记录吗？")) {
+      records = [];
+      editingId = null;
+      updateEditUI();
+      resetFormForNew();
+      syncLastMeterFromLatest();
+      renderHistory();
+      setMsg("已清空全部历史记录。", "info");
+      setTimeout(() => {
+        if (el.msg.textContent === "已清空全部历史记录。") setMsg("");
+      }, 2000);
+    }
+  });
+
+  function handleHistoryClick(e) {
+    const editBtn = e.target.closest(".edit");
+    if (editBtn) {
+      const rec = records.find((r) => String(r.id) === String(editBtn.dataset.id));
+      if (rec) enterEditMode(rec);
+      return;
+    }
+    const delBtn = e.target.closest(".del");
+    if (delBtn) {
+      const id = String(delBtn.dataset.id);
+      records = records.filter((r) => String(r.id) !== id);
+      if (editingId && String(editingId) === id) {
+        editingId = null;
+        updateEditUI();
+      }
+      syncLastMeterFromLatest();
+      renderHistory();
+    }
+  }
+
+  el.historyBody.addEventListener("click", handleHistoryClick);
+  el.cardsView.addEventListener("click", handleHistoryClick);
+
+  // 导出菜单
+  el.exportBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    el.exportMenu.classList.toggle("show");
+  });
+
+  el.exportMenu.addEventListener("click", (e) => {
+    const btn = e.target.closest("button[data-format]");
+    if (!btn) return;
+    el.exportMenu.classList.remove("show");
+    const format = btn.dataset.format;
+    if (format === "xls") exportXLS();
+    else if (format === "csv") exportCSV();
+    else if (format === "json") exportJSON();
+  });
+
+  document.addEventListener("click", (e) => {
+    if (!e.target.closest(".export-wrap")) {
+      el.exportMenu.classList.remove("show");
+    }
+  });
+
+  // 导入
+  el.importBtn.addEventListener("click", () => {
+    el.importInput.value = "";
+    el.importInput.click();
+  });
+
+  el.importInput.addEventListener("change", () => {
+    const file = el.importInput.files && el.importInput.files[0];
+    if (file) importBackup(file);
+  });
+
+  el.modeBtn.addEventListener("click", () => {
+    document.body.classList.toggle("phone-mode");
+    const isPhone = document.body.classList.contains("phone-mode");
+    el.modeBtn.innerHTML = isPhone
+      ? '<span class="ico">🖥</span><span class="txt">桌面模式</span>'
+      : '<span class="ico">📱</span><span class="txt">手机模式</span>';
+    renderHistory();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  });
+
+  el.settingsBtn.addEventListener("click", openSettings);
+  el.settingsClose.addEventListener("click", closeSettings);
+  el.settingsCancel.addEventListener("click", closeSettings);
+  el.settingsSave.addEventListener("click", saveSettings);
+
+  el.recalcAllBtn.addEventListener("click", () => {
+    if (records.length === 0) {
+      setMsg("暂无历史记录可重算。", "warn");
+      return;
+    }
+    if (!confirm(`确定按当前电价重算全部 ${records.length} 条记录的电费吗？`)) return;
+    const n = recalcAllRecordFees();
+    setMsg(`✓ 已按当前电价重算 ${n} 条历史记录的电费。`, "info");
+    setTimeout(() => {
+      if (el.msg.textContent.startsWith("✓")) setMsg("");
+    }, 3000);
+  });
+
+  el.modal.addEventListener("click", (e) => {
+    if (e.target === el.modal) closeSettings();
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+      if (el.modal.classList.contains("show")) closeSettings();
+      el.exportMenu.classList.remove("show");
+    }
+  });
+
+  [el.setCap, el.setPeak, el.setValley, el.setValleyStart, el.setValleyEnd, el.setStartTime, el.setEndTime].forEach((input) => {
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") saveSettings();
+    });
+  });
+
+  /* ---------------- 初始化 ---------------- */
+  loadSettings();
+  loadLastMeter();
+  loadRecords();
+
+  el.recordTime.value = nowLocalInput();
+  if (lastMeterAfter !== null) {
+    el.meterBefore.value = lastMeterAfter.toFixed(2);
+  }
+
+  updateEditUI();
+  updateTimerLabels();
+  render(null);
+  renderHistory();
+})();
+</script>
+</body>
+</html>
